@@ -50,8 +50,43 @@ public class PlanSpec {
                     .build()))
             .description(
                 "Build plan for core Canvas. This plan is being managed via Bamboo Specs configuration-as-code. Modify https://github.com/sfu/bamboo-specs-canvas-deploy project to update the plan")
-            .stages(new Stage("Checkout")
-                .jobs(new Job("Checkout and install dependencies", new BambooKey("JOB1"))
+            .stages(new Stage("Checkout").jobs(new Job("Checkout repositories", new BambooKey(
+                "JOB1")).pluginConfigurations(new AllOtherPluginsConfiguration()
+                    .configuration(new MapBuilder<String, Object>().put("custom",
+                        new MapBuilder<String, Object>()
+                            .put("auto",
+                                new MapBuilder<String, String>().put("regex", "").put("label", "")
+                                    .build())
+                            .put("buildHangingConfig.enabled", "false").put("ncover.path", "")
+                            .put("clover",
+                                new MapBuilder<String, String>().put("path", "").put("license", "")
+                                    .put("useLocalLicenseKey", "true").build())
+                            .build())
+                        .build()))
+                    .artifacts(new Artifact().name("Code Checkout").copyPattern("canvas-code.tar")
+                        .shared(true))
+                    .tasks(
+                        new ScriptTask().description(
+                            "Clean workdir").inlineBody("find . -delete"),
+                        new VcsCheckoutTask().description("Checkout Default Repository")
+                            .checkoutItems(new CheckoutItem().defaultRepository(),
+                                new CheckoutItem().repository(new VcsRepositoryIdentifier().name(
+                                    "instructure/QTIMigrationTool")).path(
+                                        "vendor/QTIMigrationTool"),
+                                new CheckoutItem().repository(new VcsRepositoryIdentifier().name(
+                                    "instructure/analytics")).path("gems/plugins/analytics"),
+                                new CheckoutItem()
+                                    .repository(new VcsRepositoryIdentifier()
+                                        .name("sfu/canvas_auth"))
+                                    .path("gems/plugins/canvas_auth"),
+                                new CheckoutItem().repository(new VcsRepositoryIdentifier().name(
+                                    "sfu/canvas-spaces")).path("gems/plugins/canvas_spaces"))
+                            .cleanCheckout(true),
+                        new ScriptTask().description("Fix QTIMigrationTool permissions").inlineBody(
+                            "chmod +x vendor/QTIMigrationTool/migrate.py"),
+                        new ScriptTask().description("Create tarball").inlineBody(
+                            "tar --exclude=\"*.tar*\" -cf canvas-code.tar ."))),
+                new Stage("Build Canvas").jobs(new Job("Build Canvas", new BambooKey("DEPS"))
                     .pluginConfigurations(new AllOtherPluginsConfiguration()
                         .configuration(new MapBuilder<String, Object>().put("custom",
                             new MapBuilder<String, Object>()
@@ -63,85 +98,18 @@ public class PlanSpec {
                                     .put("license", "").put("useLocalLicenseKey", "true").build())
                                 .build())
                             .build()))
-                    .artifacts(new Artifact().name("Code Checkout").copyPattern("canvas-code.tar")
-                        .shared(true))
-                    .tasks(
-                        new ScriptTask().description("Clean workdir").inlineBody("find . -delete"),
-                        new VcsCheckoutTask().description("Checkout Default Repository")
-                            .checkoutItems(new CheckoutItem().defaultRepository(),
-                                new CheckoutItem()
-                                    .repository(new VcsRepositoryIdentifier()
-                                        .name("instructure/QTIMigrationTool"))
-                                    .path("vendor/QTIMigrationTool"),
-                                new CheckoutItem()
-                                    .repository(
-                                        new VcsRepositoryIdentifier().name("instructure/analytics"))
-                                    .path("gems/plugins/analytics"),
-                                new CheckoutItem().repository(
-                                    new VcsRepositoryIdentifier().name("sfu/canvas_auth"))
-                                    .path("gems/plugins/canvas_auth"),
-                                new CheckoutItem()
-                                    .repository(
-                                        new VcsRepositoryIdentifier().name("sfu/canvas-spaces"))
-                                    .path("gems/plugins/canvas_spaces"))
-                            .cleanCheckout(true),
-                        new ScriptTask().description("Fix QTIMigrationTool permissions")
-                            .inlineBody("chmod +x vendor/QTIMigrationTool/migrate.py"),
-                        new ScriptTask().description("Create tarball").inlineBody(
-                            "tar --exclude=\"*.tar*\" -cf canvas-code.tar ."))),
-                new Stage("Install Dependencies")
-                    .jobs(new Job("Install Dependencies", new BambooKey("DEPS"))
-                        .pluginConfigurations(new AllOtherPluginsConfiguration()
-                            .configuration(new MapBuilder<String, Object>().put("custom",
-                                new MapBuilder<String, Object>()
-                                    .put("auto",
-                                        new MapBuilder<String, String>().put("regex", "")
-                                            .put("label", "").build())
-                                    .put("buildHangingConfig.enabled", "false")
-                                    .put("ncover.path", "")
-                                    .put("clover",
-                                        new MapBuilder<String, String>().put("path", "")
-                                            .put("license", "").put("useLocalLicenseKey", "true")
-                                            .build())
-                                    .build())
-                                .build()))
-                        .artifacts(new Artifact().name("Canvas with deps").copyPattern("canvas.tar")
-                            .shared(true))
-                        .tasks(
-                            new ScriptTask()
-                                .inlineBody("echo `whoami`\necho `pwd`\necho $UID\necho $GID"),
-                            new ScriptTask().description("Clean and untar artifact").inlineBody(
-                                "find . -not -name '*.tar*' -delete\ntar xf canvas-code.tar\nrm -f canvas-code.tar"),
-                            new ScriptTask().description("Bundle Install").inlineBody(
-                                "bundle config build.nokogiri --use-system-libraries\nbundle config build.pg --with-pg-config=/usr/pgsql-9.6/bin/pg_config\nbundle install --binstubs --path=vendor/bundle --without=mysql,sqlite"),
-                            new ScriptTask().description("Create tarball")
-                                .inlineBody("tar --exclude=\"*.tar*\" -cf canvas.tar ."))
-                        .artifactSubscriptions(new ArtifactSubscription().artifact("Code Checkout"))
-                        .dockerConfiguration(dockerConfig)),
-                new Stage("Build").jobs(new Job("Compile Assets", new BambooKey("COMPILEASSETS"))
-                    .pluginConfigurations(new AllOtherPluginsConfiguration()
-                        .configuration(new MapBuilder<String, Object>().put(
-                            "custom",
-                            new MapBuilder<String, Object>()
-                                .put("auto",
-                                    new MapBuilder<String, String>().put("regex", "")
-                                        .put("label", "").build())
-                                .put("buildHangingConfig.enabled", "false").put("ncover.path", "")
-                                .put("clover", new MapBuilder<String, String>().put("path", "")
-                                    .put("license", "").put("useLocalLicenseKey", "true").build())
-                                .build())
-                            .build()))
                     .artifacts(new Artifact().name("Canvas Release")
                         .copyPattern("canvas-release.tar").shared(true).required(true))
-                    .tasks(
-                        new ScriptTask().description("Untar artifact").inlineBody(
-                            "find . -not -name '*.tar*' -delete\ntar xf canvas.tar\nrm canvas.tar"),
+                    .tasks(new ScriptTask().description("Clean and untar artifact").inlineBody(
+                        "find . -not -name '*.tar*' -delete\ntar xf canvas-code.tar\nrm -f canvas-code.tar"),
+                        new ScriptTask().description("Bundle Install").inlineBody(
+                            "bundle config build.nokogiri --use-system-libraries\nbundle config build.pg --with-pg-config=/usr/pgsql-9.6/bin/pg_config\nbundle install --binstubs --path=vendor/bundle --without=mysql,sqlite"),
                         new ScriptTask().description("Compile assets")
                             .inlineBody("bundle exec rake canvas:compile_assets --trace")
                             .environmentVariables("RAILS_ENV=production"),
                         new ScriptTask().description("Create tarball")
                             .inlineBody("tar --exclude=\"*.tar*\" -cf canvas-release.tar ."))
-                    .artifactSubscriptions(new ArtifactSubscription().artifact("Canvas with deps"))
+                    .artifactSubscriptions(new ArtifactSubscription().artifact("Code Checkout"))
                     .dockerConfiguration(dockerConfig)))
             .linkedRepositories("sfu/canvas-lms-internal", "instructure/QTIMigrationTool",
                 "instructure/analytics", "sfu/canvas-spaces", "sfu/canvas_auth")
