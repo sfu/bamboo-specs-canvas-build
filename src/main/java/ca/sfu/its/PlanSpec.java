@@ -87,8 +87,8 @@ public class PlanSpec {
                             .cleanCheckout(true),
                         new ScriptTask().description("Fix QTIMigrationTool permissions")
                             .inlineBody("chmod +x vendor/QTIMigrationTool/migrate.py"),
-                        new ScriptTask().description("Create tarball")
-                            .inlineBody("tar --exclude=\"*.tar*\" -cf canvas-code.tar ."))),
+                        new ScriptTask().description("Create tarball").inlineBody(
+                            "tar --exclude=\"*.tar*\" -cf canvas-code.tar ."))),
                 new Stage("Install Dependencies")
                     .jobs(new Job("Install Dependencies", new BambooKey("DEPS"))
                         .pluginConfigurations(new AllOtherPluginsConfiguration()
