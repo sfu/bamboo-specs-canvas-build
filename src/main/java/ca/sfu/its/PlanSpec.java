@@ -40,20 +40,21 @@ public class PlanSpec {
     final Plan plan = new Plan(
         new Project().oid(new BambooOid("gfkbnmmhs7wj")).key(new BambooKey("CANVAS")).name("Canvas")
             .description("SFU Canvas"),
-        "Canvas LMS Core", new BambooKey("CANVASLMS")).pluginConfigurations(
-            new ConcurrentBuilds().useSystemWideDefault(false),
-            new AllOtherPluginsConfiguration().configuration(new MapBuilder<String, Object>().put(
-                "custom",
-                new MapBuilder<String, String>().put("ruby-config-environmentVariables", "")
-                    .put("buildExpiryConfig.enabled", "false").put("ruby-config-runtime",
-                        "NONE ruby-2.4.4p296")
-                    .build())
-                .build()))
+        "Canvas LMS Core", new BambooKey("CANVASLMS"))
+            .pluginConfigurations(new ConcurrentBuilds().useSystemWideDefault(false),
+                new AllOtherPluginsConfiguration().configuration(new MapBuilder<String, Object>()
+                    .put("custom",
+                        new MapBuilder<String, String>().put("ruby-config-environmentVariables", "")
+                            .put("buildExpiryConfig.enabled", "false")
+                            .put("ruby-config-runtime", "NONE ruby-2.4.4p296").build())
+                    .build()))
+            .description(
+                "Build plan for core Canvas. This plan is being managed via Bamboo Specs configuration-as-code. Modify https://github.com/sfu/bamboo-specs-canvas-deploy project to update the plan")
             .stages(new Stage("Checkout")
                 .jobs(new Job("Checkout and install dependencies", new BambooKey("JOB1"))
-                    .pluginConfigurations(new AllOtherPluginsConfiguration().configuration(
-                        new MapBuilder<String, Object>()
-                            .put("custom", new MapBuilder<String, Object>()
+                    .pluginConfigurations(new AllOtherPluginsConfiguration()
+                        .configuration(new MapBuilder<String, Object>().put("custom",
+                            new MapBuilder<String, Object>()
                                 .put("auto",
                                     new MapBuilder<String, String>().put("regex", "")
                                         .put("label", "").build())
