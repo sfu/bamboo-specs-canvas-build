@@ -114,8 +114,6 @@ public class PlanSpec {
                                 "find . -not -name '*.tar*' -delete\ntar xf canvas-code.tar\nrm -f canvas-code.tar"),
                             new ScriptTask().description("Bundle Install").inlineBody(
                                 "bundle config build.nokogiri --use-system-libraries\nbundle config build.pg --with-pg-config=/usr/pgsql-9.6/bin/pg_config\nbundle install --binstubs --path=vendor/bundle --without=mysql,sqlite"),
-                            new ScriptTask().description("Yarn install")
-                                .inlineBody("yarn install --pure-lockfile"),
                             new ScriptTask().description("Create tarball")
                                 .inlineBody("tar --exclude=\"*.tar*\" -cf canvas.tar ."))
                         .artifactSubscriptions(new ArtifactSubscription().artifact("Code Checkout"))
