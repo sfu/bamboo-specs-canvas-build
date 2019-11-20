@@ -107,8 +107,8 @@ public class PlanSpec {
                         new ScriptTask().description("Compile assets")
                             .inlineBody("bundle exec rake canvas:compile_assets --trace")
                             .environmentVariables("RAILS_ENV=production"),
-                        new ScriptTask().description("Add revsion file to tarball")
-                            .inlineBody("git rev-parse HEAD > REVISION"),
+                        new ScriptTask().description("Add VERSION file to tarball")
+                            .inlineBody("git rev-parse HEAD > VERSION"),
                         new ScriptTask().description("Create tarball")
                             .inlineBody("tar --exclude=\"*.tar*\" -cf canvas-release.tar ."))
                     .artifactSubscriptions(new ArtifactSubscription().artifact("Code Checkout"))
