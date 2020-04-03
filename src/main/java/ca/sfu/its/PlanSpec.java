@@ -129,7 +129,7 @@ public class PlanSpec {
                                 .inlineBody("git rev-parse HEAD > VERSION"),
                             new ScriptTask().description("Remove unnecessary files for release")
                                 .inlineBody(
-                                    "rm -rf .git spec tmp public/dist/webpack-dev client_apps/*/node_modules gems/plugins/*/spec_canvas && cd node_modules && ls -A | grep -v canvas_offline_course_viewer | xargs rm -rf"),
+                                    "rm -rf .git spec tmp log public/dist/webpack-dev client_apps/*/node_modules gems/plugins/*/spec_canvas && cd node_modules && ls -A | grep -v canvas_offline_course_viewer | xargs rm -rf"),
                             new ScriptTask().description("Create tarball")
                                 .inlineBody("tar --exclude=\"*.tar*\" -cf canvas-release.tar ."))
                         .artifactSubscriptions(new ArtifactSubscription().artifact("Code Checkout"))
