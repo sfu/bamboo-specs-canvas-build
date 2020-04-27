@@ -24,6 +24,10 @@ import com.atlassian.bamboo.specs.api.builders.repository.VcsRepositoryIdentifie
 import com.atlassian.bamboo.specs.builders.task.CheckoutItem;
 import com.atlassian.bamboo.specs.builders.task.ScriptTask;
 import com.atlassian.bamboo.specs.builders.task.VcsCheckoutTask;
+import com.atlassian.bamboo.specs.builders.trigger.RepositoryPollingTrigger;
+import com.atlassian.bamboo.specs.api.builders.notification.Notification;
+import com.atlassian.bamboo.specs.builders.notification.EmailRecipient;
+import com.atlassian.bamboo.specs.builders.notification.PlanCompletedNotification;
 
 /**
  * Plan configuration for Bamboo.
@@ -137,9 +141,14 @@ public class PlanSpec {
                 .linkedRepositories("sfu/canvas-lms-internal", "instructure/QTIMigrationTool",
                     "instructure/analytics", "sfu/canvas-spaces", "sfu/canvas_auth")
 
-                .planBranchManagement(new PlanBranchManagement().delete(new BranchCleanup())
-                    .notificationForCommitters())
+                .planBranchManagement(new PlanBranchManagement()
+                    .createForVcsBranchMatching("^sfu-release\\/\\d{4}(-\\d{2}){2}$")
+                    .delete(new BranchCleanup()).defaultTrigger(new RepositoryPollingTrigger())
+                    .notificationLikeParentPlan().issueLinkingEnabled(false))
+                .notifications(new Notification().type(new PlanCompletedNotification())
+                    .recipients(new EmailRecipient("canvas-tech-icat@sfu.ca")))
                 .forceStopHungBuilds();
+
 
     return plan;
   }
@@ -158,9 +167,9 @@ public class PlanSpec {
 
   public PlanPermissions planPermission() {
     final PlanPermissions planPermission =
-        new PlanPermissions(new PlanIdentifier("CASMFA", "MFAMGR")).permissions(new Permissions()
-            .userPermissions("grahamb", PermissionType.EDIT, PermissionType.VIEW,
-                PermissionType.ADMIN, PermissionType.CLONE, PermissionType.BUILD)
+        new PlanPermissions(new PlanIdentifier("CANVAS", "CANVASLMS")).permissions(new Permissions()
+            .groupPermissions("canvas-tech-icat", PermissionType.VIEW, PermissionType.EDIT,
+                PermissionType.CLONE, PermissionType.BUILD, PermissionType.ADMIN)
             .loggedInUserPermissions(PermissionType.VIEW).anonymousUserPermissionView());
     return planPermission;
   }
