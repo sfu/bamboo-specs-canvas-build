@@ -34,7 +34,7 @@ import com.atlassian.bamboo.specs.builders.task.VcsCheckoutTask;
 public class PlanSpec {
 
   DockerConfiguration dockerConfig =
-      new DockerConfiguration().image("simonfraseruniversity/bamboo-build-canvas-lms:1565378885");
+      new DockerConfiguration().image("simonfraseruniversity/bamboo-build-canvas-lms:1586996705");
 
   public Plan createPlan() {
     final Plan plan =
