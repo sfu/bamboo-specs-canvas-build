@@ -38,7 +38,7 @@ import com.atlassian.bamboo.specs.builders.notification.PlanCompletedNotificatio
 public class PlanSpec {
 
   DockerConfiguration dockerConfig =
-      new DockerConfiguration().image("simonfraseruniversity/bamboo-build-canvas-lms:1586996705");
+      new DockerConfiguration().image("simonfraseruniversity/bamboo-build-canvas-lms:1602197066");
 
   public Plan createPlan() {
     final Plan plan =
